@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 校园智能路径优化与应急疏散系统（企业级工程化版）
 
 本目录 `rebuild/` 是可独立运行的工程化交付：
@@ -102,3 +103,7 @@ flowchart TB
 每个后端都提供：
 - `GET /healthz`：进程存活
 - `GET /readyz`：依赖就绪（会尝试 `db.Ping()`）
+=======
+# campus_emergency
+半成品
+>>>>>>> 2fb74873b83b2abc02479ca6a4fd47f17558dced
