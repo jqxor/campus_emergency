@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>测试截图汇总 — 校园智能路径优化与疏散系统</title>
+<style>
+  :root {
+    --bg: #f5f5f7;
+    --card-bg: #fff;
+    --text: #1d1d1f;
+    --text-secondary: #86868b;
+    --border: #d2d2d7;
+    --accent: #0071e3;
+    --success: #34c759;
+    --warn: #ff9f0a;
+    --error: #ff3b30;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle { color: var(--text-secondary); margin-bottom: 2rem; }
+
+  .summary-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--card-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 2.5rem;
+  }
+  .summary-table th, .summary-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+  }
+  .summary-table th { background: #fafafa; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+  .summary-table tr:last-child td { border-bottom: none; }
+  .status-ok { color: var(--success); font-weight: 600; }
+  .status-warn { color: var(--warn); font-weight: 600; }
+  .badge { display: inline-block; padding: 0.15em 0.5em; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+  .badge-ok { background: #d1f7d9; color: #1a7f32; }
+  .badge-warn { background: #fff3d6; color: #b05500; }
+
+  .findings {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 2.5rem;
+  }
+  .findings h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+  .findings ul { list-style: none; }
+  .findings li { padding: 0.4rem 0 0.4rem 1.5rem; position: relative; }
+  .findings li::before { content: ''; position: absolute; left: 0; top: 0.7rem; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  .module { margin-bottom: 3rem; }
+  .module-header {
+    border-bottom: 2px solid var(--accent);
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .module-header h2 { font-size: 1.35rem; }
+  .module-header .count { color: var(--text-secondary); font-size: 0.85rem; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+  .card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+  .card img { width: 100%; height: auto; display: block; cursor: pointer; }
+  .card-label { padding: 0.6rem 0.75rem; font-size: 0.8rem; color: var(--text-secondary); background: #fafafa; border-top: 1px solid #f0f0f0; }
+
+  /* lightbox */
+  .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; }
+  .lightbox.active { display: flex; }
+  .lightbox img { max-width: 94vw; max-height: 88vh; border-radius: 4px; }
+  .lightbox-close { position: absolute; top: 1.25rem; right: 1.5rem; color: #fff; font-size: 2rem; cursor: pointer; border: none; background: none; opacity: 0.7; }
+  .lightbox-close:hover { opacity: 1; }
+  .lightbox-caption { color: #ccc; margin-top: 1rem; font-size: 0.9rem; }
+  .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); color: #fff; font-size: 2.5rem; cursor: pointer; border: none; background: rgba(255,255,255,0.1); border-radius: 50%; width: 3rem; height: 3rem; line-height: 3rem; text-align: center; opacity: 0.6; transition: opacity 0.2s; }
+  .lightbox-nav:hover { opacity: 1; }
+  .lightbox-prev { left: 1.5rem; }
+  .lightbox-next { right: 1.5rem; }
+
+  .float-nav { position: fixed; right: 1rem; bottom: 2rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 100; }
+  .float-nav a { display: block; background: var(--card-bg); color: var(--text); padding: 0.4rem 0.75rem; border-radius: 6px; text-decoration: none; font-size: 0.75rem; box-shadow: 0 1px 4px rgba(0,0,0,0.1); transition: all 0.15s; }
+  .float-nav a:hover { background: var(--accent); color: #fff; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .grid { grid-template-columns: 1fr; }
+    .float-nav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>测试截图汇总</h1>
+<p class="subtitle">校园智能路径优化与疏散系统 — 共 41 张截图，覆盖 9 大功能模块</p>
+
+<table class="summary-table">
+  <thead>
+    <tr><th>模块</th><th>截图数</th><th>后端 API</th><th>状态</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><a href="#home">首页概览</a></td><td>1</td><td>-</td><td><span class="badge badge-ok">页面正常</span></td></tr>
+    <tr><td><a href="#auth">登录/注册</a></td><td>5</td><td>role_management :8082</td><td><span class="badge badge-warn">401</span></td></tr>
+    <tr><td><a href="#path">智能路径优化</a></td><td>7</td><td>path_optimization :8080</td><td><span class="badge badge-ok">200 OK</span></td></tr>
+    <tr><td><a href="#evac">应急疏散预案</a></td><td>10</td><td>campus_emergency :8081</td><td><span class="badge badge-ok">200 OK</span></td></tr>
+    <tr><td><a href="#report">统计报表</a></td><td>5</td><td>本地生成</td><td><span class="badge badge-ok">正常</span></td></tr>
+    <tr><td><a href="#monitor">监控分析</a></td><td>6</td><td>本地生成</td><td><span class="badge badge-ok">正常</span></td></tr>
+    <tr><td><a href="#admin">系统管理</a></td><td>5</td><td>role_management :8082</td><td><span class="badge badge-warn">401</span></td></tr>
+    <tr><td><a href="#user">用户中心</a></td><td>1</td><td>-</td><td><span class="badge badge-ok">页面正常</span></td></tr>
+    <tr><td><a href="#back">返回首页</a></td><td>1</td><td>-</td><td><span class="badge badge-ok">导航正常</span></td></tr>
+  </tbody>
+</table>
+
+<div class="findings">
+  <h2>关键发现</h2>
+  <ul>
+    <li>路径计算 API 正常返回（200），成功计算 631.5m 直线距离</li>
+    <li>预案搜索返回已有 1 条预案（200），预案创建成功（200）</li>
+    <li>疏散模拟检测到 2 处拥堵点</li>
+    <li>认证问题：登录/注册、系统管理返回 401 — auth 流程需要排查</li>
+  </ul>
+</div>
+
+<hr class="divider">
+
+<!--  1. 首页概览 -->
+<section class="module" id="home">
+  <div class="module-header"><h2>首页概览</h2><span class="count">1 张截图</span></div>
+  <div class="grid">
+    <div class="card"><img src="01_首页概览.png" alt="01 首页概览" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">01 · 首页概览 · 页面正常</div></div>
+  </div>
+</section>
+
+<!--  2. 登录/注册 -->
+<section class="module" id="auth">
+  <div class="module-header"><h2>登录/注册</h2><span class="count">5 张截图 · role_management :8082 · <span class="status-warn">401</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="02_登录页面.png" alt="02 登录页面" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">02 · 登录页面</div></div>
+    <div class="card"><img src="03_注册表单已填写.png" alt="03 注册表单已填写" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">03 · 注册表单已填写</div></div>
+    <div class="card"><img src="04_注册结果.png" alt="04 注册结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">04 · 注册结果</div></div>
+    <div class="card"><img src="05_登录表单已填写.png" alt="05 登录表单已填写" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">05 · 登录表单已填写</div></div>
+    <div class="card"><img src="06_登录结果.png" alt="06 登录结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">06 · 登录结果</div></div>
+  </div>
+</section>
+
+<!--  3. 智能路径优化 -->
+<section class="module" id="path">
+  <div class="module-header"><h2>智能路径优化</h2><span class="count">7 张截图 · path_optimization :8080 · <span class="status-ok">200 OK</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="07_路径优化-导航接口.png" alt="07 导航接口" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">07 · 导航接口</div></div>
+    <div class="card"><img src="08_路径优化-参数已填写.png" alt="08 参数已填写" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">08 · 参数已填写</div></div>
+    <div class="card"><img src="09_路径优化-计算结果.png" alt="09 计算结果（631.5m）" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">09 · 计算结果（631.5m 直线距离）</div></div>
+    <div class="card"><img src="10_路径优化-障碍物添加.png" alt="10 障碍物添加" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">10 · 障碍物添加</div></div>
+    <div class="card"><img src="11_路径优化-障碍物结果.png" alt="11 障碍物结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">11 · 障碍物结果</div></div>
+    <div class="card"><img src="12_路径优化-分析导出.png" alt="12 分析导出" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">12 · 分析导出</div></div>
+    <div class="card"><img src="13_路径优化-汇总结果.png" alt="13 汇总结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">13 · 汇总结果</div></div>
+  </div>
+</section>
+
+<!--  4. 应急疏散预案 -->
+<section class="module" id="evac">
+  <div class="module-header"><h2>应急疏散预案</h2><span class="count">10 张截图 · campus_emergency :8081 · <span class="status-ok">200 OK</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="14_应急疏散-预案管理.png" alt="14 预案管理" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">14 · 预案管理</div></div>
+    <div class="card"><img src="15_应急疏散-搜索预案.png" alt="15 搜索预案（1条）" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">15 · 搜索预案（1条预案）</div></div>
+    <div class="card"><img src="16_应急疏散-创建预案表单.png" alt="16 创建预案表单" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">16 · 创建预案表单</div></div>
+    <div class="card"><img src="17_应急疏散-创建预案结果.png" alt="17 创建预案结果（200）" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">17 · 创建预案结果（200 OK）</div></div>
+    <div class="card"><img src="18_应急疏散-模拟参数.png" alt="18 模拟参数" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">18 · 模拟参数</div></div>
+    <div class="card"><img src="19_应急疏散-模拟结果.png" alt="19 模拟结果（2处拥堵）" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">19 · 模拟结果（检测到2处拥堵点）</div></div>
+    <div class="card"><img src="20_应急疏散-事件触发.png" alt="20 事件触发" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">20 · 事件触发</div></div>
+    <div class="card"><img src="21_应急疏散-事件触发结果.png" alt="21 事件触发结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">21 · 事件触发结果</div></div>
+    <div class="card"><img src="22_应急疏散-路径优化.png" alt="22 路径优化" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">22 · 路径优化</div></div>
+    <div class="card"><img src="23_应急疏散-路径优化结果.png" alt="23 路径优化结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">23 · 路径优化结果</div></div>
+  </div>
+</section>
+
+<!--  5. 统计报表 -->
+<section class="module" id="report">
+  <div class="module-header"><h2>统计报表</h2><span class="count">5 张截图 · 本地生成 · <span class="status-ok">正常</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="24_统计报表-路径报表.png" alt="24 路径报表" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">24 · 路径报表</div></div>
+    <div class="card"><img src="25_统计报表-参数已填写.png" alt="25 参数已填写" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">25 · 参数已填写</div></div>
+    <div class="card"><img src="26_统计报表-生成结果.png" alt="26 生成结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">26 · 生成结果</div></div>
+    <div class="card"><img src="27_统计报表-疏散报表.png" alt="27 疏散报表" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">27 · 疏散报表</div></div>
+    <div class="card"><img src="28_统计报表-疏散结果.png" alt="28 疏散结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">28 · 疏散结果</div></div>
+  </div>
+</section>
+
+<!--  6. 监控分析 -->
+<section class="module" id="monitor">
+  <div class="module-header"><h2>监控分析</h2><span class="count">6 张截图 · 本地生成 · <span class="status-ok">正常</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="29_监控分析-视频监控.png" alt="29 视频监控" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">29 · 视频监控</div></div>
+    <div class="card"><img src="30_监控分析-摄像头选择.png" alt="30 摄像头选择" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">30 · 摄像头选择</div></div>
+    <div class="card"><img src="31_监控分析-风险预警设置.png" alt="31 风险预警设置" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">31 · 风险预警设置</div></div>
+    <div class="card"><img src="32_监控分析-风险预测结果.png" alt="32 风险预测结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">32 · 风险预测结果</div></div>
+    <div class="card"><img src="33_监控分析-综合报告.png" alt="33 综合报告" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">33 · 综合报告</div></div>
+    <div class="card"><img src="34_监控分析-报告生成结果.png" alt="34 报告生成结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">34 · 报告生成结果</div></div>
+  </div>
+</section>
+
+<!--  7. 系统管理 -->
+<section class="module" id="admin">
+  <div class="module-header"><h2>系统管理</h2><span class="count">5 张截图 · role_management :8082 · <span class="status-warn">401</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="35_系统管理-用户管理.png" alt="35 用户管理" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">35 · 用户管理</div></div>
+    <div class="card"><img src="36_系统管理-用户操作结果.png" alt="36 用户操作结果" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">36 · 用户操作结果</div></div>
+    <div class="card"><img src="37_系统管理-角色管理.png" alt="37 角色管理" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">37 · 角色管理</div></div>
+    <div class="card"><img src="38_系统管理-角色列表.png" alt="38 角色列表" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">38 · 角色列表</div></div>
+    <div class="card"><img src="39_系统管理-校园配置.png" alt="39 校园配置" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">39 · 校园配置</div></div>
+  </div>
+</section>
+
+<!--  8. 用户中心 -->
+<section class="module" id="user">
+  <div class="module-header"><h2>用户中心</h2><span class="count">1 张截图 · <span class="status-ok">页面正常</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="40_用户中心.png" alt="40 用户中心" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">40 · 用户中心 · 页面正常</div></div>
+  </div>
+</section>
+
+<!--  9. 返回首页 -->
+<section class="module" id="back">
+  <div class="module-header"><h2>返回首页</h2><span class="count">1 张截图 · <span class="status-ok">导航正常</span></span></div>
+  <div class="grid">
+    <div class="card"><img src="41_返回首页.png" alt="41 返回首页" onclick="openLightbox(this.src,this.alt)" loading="lazy"><div class="card-label">41 · 返回首页 · 导航正常</div></div>
+  </div>
+</section>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+  <button class="lightbox-nav lightbox-prev" onclick="navLightbox(-1,event)">‹</button>
+  <button class="lightbox-nav lightbox-next" onclick="navLightbox(1,event)">›</button>
+  <img id="lb-img" src="" alt="">
+  <div class="lightbox-caption" id="lb-caption"></div>
+</div>
+
+<nav class="float-nav">
+  <a href="#home">首页</a><a href="#auth">登录</a><a href="#path">路径</a><a href="#evac">疏散</a>
+  <a href="#report">报表</a><a href="#monitor">监控</a><a href="#admin">管理</a><a href="#user">用户</a>
+  <a href="#back">返回</a><a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false">↑ 顶部</a>
+</nav>
+
+<script>
+const imgs = Array.from(document.querySelectorAll('.card img'));
+let idx = -1;
+
+function openLightbox(src, alt) {
+  idx = imgs.findIndex(i => i.src === src);
+  document.getElementById('lb-img').src = src;
+  document.getElementById('lb-caption').textContent = alt;
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(e) {
+  if (e && e.target !== e.currentTarget && e.target.tagName !== 'BUTTON') return;
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+  idx = -1;
+}
+
+function navLightbox(d, e) { e.stopPropagation(); if (idx<0) return; idx = (idx+d+imgs.length)%imgs.length; const i=imgs[idx]; document.getElementById('lb-img').src=i.src; document.getElementById('lb-caption').textContent=i.alt; }
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('active')) return;
+  if (e.key==='Escape') closeLightbox();
+  if (e.key==='ArrowLeft') navLightbox(-1,e);
+  if (e.key==='ArrowRight') navLightbox(1,e);
+});
+</script>
+</body>
+</html>

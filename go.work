@@ -1,0 +1,7 @@
+go 1.22
+
+use (
+	./campus_emergency
+	./path_optimization
+	./role_management
+)
